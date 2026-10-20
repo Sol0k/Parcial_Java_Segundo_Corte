@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: mysql
+    depends_on:
+      - mysql
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: trabajos_grado_uts
+      MYSQL_USER: uts
+      MYSQL_PASSWORD: uts_dev_password
+      MYSQL_ROOT_PASSWORD: change_root_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database:/docker-entrypoint-initdb.d:ro
+volumes:
+  mysql_data:
