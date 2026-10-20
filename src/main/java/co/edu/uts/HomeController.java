@@ -20,8 +20,10 @@ public class HomeController {
     @GetMapping({"/","/login","/login.jsp"})
     String login(){return "login";}
 
-    @GetMapping("/app/{page}.jsp")
-    String appPage(@PathVariable String page,@RequestParam(defaultValue="1") int pageNumber,HttpSession s,Model m){
+    @GetMapping({"/app/inicio.jsp","/app/ideas.jsp","/app/proyectos.jsp","/app/practicas.jsp","/app/entregables.jsp","/app/evaluaciones.jsp","/app/solicitudes.jsp","/app/periodos.jsp","/app/pqrs.jsp","/app/notificaciones.jsp","/app/docentes.jsp","/app/estudiantes.jsp","/app/paso-a-grado.jsp","/app/reportes.jsp"})
+    String appPage(@RequestParam(defaultValue="1") int pageNumber,HttpSession s,Model m, jakarta.servlet.http.HttpServletRequest request){
+        String uri=request.getRequestURI();
+        String page=uri.substring(uri.lastIndexOf('/')+1,uri.length()-4);
         String section=switch(page){
             case "inicio" -> "inicio";
             case "ideas" -> "ideas";
