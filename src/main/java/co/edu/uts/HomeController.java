@@ -71,7 +71,7 @@ public class HomeController {
     @PostMapping("/ideas/{id}/decision")
     String decideIdea(@PathVariable long id,@RequestParam String estado,@RequestParam(defaultValue="") String observaciones,HttpSession s){
         Map<String,Object> u=user(s);if(!can(u,"COMITE","ADMIN")||(!"APROBADA".equals(estado)&&!"RECHAZADA".equals(estado))||("RECHAZADA".equals(estado)&&observaciones.isBlank()))return "redirect:/dashboard";
-        if(scalar("SELECT leida_por_comite FROM idea WHERE id=?",id)==null)return "redirect:/dashboard";
+        if(scalar("SELECT COUNT(*) FROM idea WHERE id=?",id)==0)return "redirect:/dashboard";
         db.update("UPDATE idea SET estado=?,observaciones=?,leida_por_comite=TRUE WHERE id=?",estado,observaciones,id);audit(u,"IDEA",id,estado,observaciones);return "redirect:/dashboard";
     }
 
@@ -90,7 +90,7 @@ public class HomeController {
     @PostMapping("/equipos")
     String addMember(@RequestParam long proyectoId,@RequestParam long estudianteId,HttpSession s){
         Map<String,Object> u=user(s);if(!can(u,"ESTUDIANTE","COMITE","ADMIN"))return "redirect:/dashboard";
-        if(scalar("SELECT fecha_inicio FROM proyecto WHERE id=?",proyectoId)!=null)return "redirect:/dashboard";
+        if(db.queryForObject("SELECT fecha_inicio FROM proyecto WHERE id=?",Object.class,proyectoId)!=null)return "redirect:/dashboard";
         if(scalar("SELECT COUNT(*) FROM integrante WHERE proyecto_id=? AND estudiante_id=?",proyectoId,estudianteId)>0||scalar("SELECT COUNT(*) FROM idea_estudiante ies JOIN proyecto p ON p.idea_id=ies.idea_id WHERE p.id=? AND ies.estudiante_id=?",proyectoId,estudianteId)==0)return "redirect:/dashboard";
         if(scalar("SELECT COUNT(*) FROM integrante WHERE estudiante_id=? AND fecha_retiro IS NULL",estudianteId)>0)return "redirect:/dashboard";
         int max=parameter("equipo_maximo_"+String.valueOf(db.queryForObject("SELECT modalidad FROM proyecto WHERE id=?",String.class,proyectoId)).toLowerCase(),3);
