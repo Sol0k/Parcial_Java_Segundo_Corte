@@ -1,6 +1,3 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<!doctype html><html lang="es"><head><meta charset="UTF-8"><title>UTS - Acceso</title><link rel="stylesheet" href="/app.css"></head>
-<body><main class="card"><h1>Trabajos de grado UTS</h1><p>Ingresa con tu correo institucional.</p>
-<form method="post" action="/login"><input name="correo" type="email" placeholder="correo@uts.edu.co" required>
-<input name="contrasena" type="password" placeholder="Contraseña" required><button>Ingresar</button></form>
-<p class="error">${error}</p></main></body></html>
+<!doctype html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Acceso · UTS</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"><link rel="stylesheet" href="/app.css"></head>
+<body class="login-page"><main class="login-card"><div class="login-brand"><span class="brand-mark">TG</span><div><strong>Trabajos de Grado</strong><small>Unidades Tecnológicas de Santander</small></div></div><h1>Bienvenido</h1><p class="login-subtitle">Ingresa con tu correo institucional para continuar.</p><form method="post" action="/login"><label class="form-label">Correo institucional</label><input class="form-control mb-3" name="correo" type="email" placeholder="correo@uts.edu.co" required><label class="form-label">Contraseña</label><input class="form-control mb-3" name="contrasena" type="password" placeholder="Contraseña" required><button class="btn btn-primary w-100 py-2">Ingresar <i class="bi bi-arrow-right"></i></button></form><p class="error mt-3">${error}</p></main></body></html>
