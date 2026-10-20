@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Controller
 public class HomeController {
@@ -42,8 +43,11 @@ public class HomeController {
 
     @PostMapping("/ideas") String createIdea(@RequestParam String titulo,@RequestParam String descripcion,@RequestParam int nivel,HttpSession s) {
         Map<String,Object> u=user(s); if(u==null)return "redirect:/login";
-        db.update("INSERT INTO idea(titulo,descripcion,nivel,estado,creador_id) VALUES(?,?,?,'PENDIENTE',?)",titulo,descripcion,nivel,u.get("id"));
-        audit(u,"IDEA",null,"CREAR",titulo); return "redirect:/dashboard";
+        String correo=String.valueOf(u.get("correo"));
+        if(!correo.endsWith("@uts.edu.co") || titulo.isBlank() || descripcion.isBlank() || nivel<1)return "redirect:/dashboard";
+        if("ESTUDIANTE".equals(u.get("rol")) && !eligible(u))return "redirect:/dashboard";
+        db.update("INSERT INTO idea(titulo,descripcion,nivel,estado,creador_id) VALUES(?,?,?,'PENDIENTE',?)",titulo.trim(),descripcion.trim(),nivel,u.get("id"));
+        audit(u,"IDEA",null,"CREAR",titulo); notifyRoles("COMITE","Nueva idea pendiente: "+titulo); return "redirect:/dashboard";
     }
 
     @PostMapping("/ideas/{id}/decision") String decideIdea(@PathVariable long id,@RequestParam String estado,@RequestParam(defaultValue="") String observaciones,HttpSession s) {
@@ -54,8 +58,58 @@ public class HomeController {
 
     @PostMapping("/proyectos") String createProject(@RequestParam long ideaId,@RequestParam String codigo,@RequestParam String modalidad,HttpSession s) {
         Map<String,Object> u=user(s); if(!can(u,"COMITE","ADMIN"))return "redirect:/dashboard";
+        if(!Pattern.matches("[A-Z]{3}-\\d{4}\\.\\d-\\d{2}",codigo) || db.queryForObject("SELECT COUNT(*) FROM idea WHERE id=? AND estado='APROBADA'",Integer.class,ideaId)==0)return "redirect:/dashboard";
         db.update("INSERT INTO proyecto(codigo,idea_id,modalidad) VALUES(?,?,?)",codigo,ideaId,modalidad);
         audit(u,"PROYECTO",null,"CREAR",codigo); return "redirect:/dashboard";
+    }
+
+    @PostMapping("/equipos")
+    String addMember(@RequestParam long proyectoId,@RequestParam long estudianteId,HttpSession s) {
+        Map<String,Object> u=user(s); if(!can(u,"ESTUDIANTE","COMITE","ADMIN"))return "redirect:/dashboard";
+        Integer started=db.queryForObject("SELECT COUNT(*) FROM etapa WHERE proyecto_id=? AND estado='EN_CURSO'",Integer.class,proyectoId);
+        Integer exists=db.queryForObject("SELECT COUNT(*) FROM integrante WHERE proyecto_id=? AND estudiante_id=?",Integer.class,proyectoId,estudianteId);
+        if((started!=null&&started>0)||(exists!=null&&exists>0))return "redirect:/dashboard";
+        if(db.queryForObject("SELECT COUNT(*) FROM integrante WHERE estudiante_id=? AND fecha_retiro IS NULL",Integer.class,estudianteId)>0)return "redirect:/dashboard";
+        db.update("INSERT INTO integrante(proyecto_id,estudiante_id,fecha_vinculacion) VALUES(?,?,CURRENT_DATE)",proyectoId,estudianteId);
+        audit(u,"EQUIPO",proyectoId,"AGREGAR",String.valueOf(estudianteId)); return "redirect:/dashboard";
+    }
+
+    @PostMapping("/etapas")
+    String stage(@RequestParam long proyectoId,@RequestParam int numero,@RequestParam String estado,HttpSession s) {
+        Map<String,Object> u=user(s); if(!can(u,"DIRECTOR","COMITE","ADMIN"))return "redirect:/dashboard";
+        if(numero<1||numero>6)return "redirect:/dashboard";
+        db.update("INSERT INTO etapa(proyecto_id,numero,estado) VALUES(?,?,?) ON DUPLICATE KEY UPDATE estado=VALUES(estado)",proyectoId,numero,estado);
+        audit(u,"ETAPA",proyectoId,"ACTUALIZAR","Etapa "+numero+" "+estado); return "redirect:/dashboard";
+    }
+
+    @PostMapping("/documentos/{id}/decision")
+    String documentDecision(@PathVariable long id,@RequestParam String estado,@RequestParam(defaultValue="") String observaciones,HttpSession s) {
+        Map<String,Object> u=user(s); if(!can(u,"DIRECTOR","COMITE","ADMIN"))return "redirect:/dashboard";
+        if("RECHAZADO".equals(estado)&&observaciones.isBlank())return "redirect:/dashboard";
+        db.update("UPDATE documento SET estado=?,observaciones=? WHERE id=?",estado,observaciones,id);
+        audit(u,"DOCUMENTO",id,estado,observaciones); return "redirect:/dashboard";
+    }
+
+    @PostMapping("/pagos/{id}/decision")
+    String paymentDecision(@PathVariable long id,@RequestParam String estado,HttpSession s) {
+        Map<String,Object> u=user(s); if(!can(u,"COMITE","ADMIN"))return "redirect:/dashboard";
+        db.update("UPDATE pago SET estado=? WHERE id=?",estado,id); audit(u,"PAGO",id,estado,""); return "redirect:/dashboard";
+    }
+
+    @PostMapping("/prorrogas/{id}/decision")
+    String extensionDecision(@PathVariable long id,@RequestParam String estado,HttpSession s) {
+        Map<String,Object> u=user(s); if(!can(u,"COMITE","ADMIN"))return "redirect:/dashboard";
+        db.update("UPDATE prorroga SET estado=? WHERE id=?",estado,id); audit(u,"PRORROGA",id,estado,""); return "redirect:/dashboard";
+    }
+
+    @GetMapping("/health") @ResponseBody String health(){ return "ok"; }
+
+    @GetMapping("/buscar")
+    String search(@RequestParam(defaultValue="") String q,HttpSession s,Model model){
+        Map<String,Object> u=user(s); if(u==null)return "redirect:/login";
+        model.addAttribute("user",u); model.addAttribute("ideas",db.queryForList("SELECT * FROM idea WHERE titulo LIKE ? OR descripcion LIKE ? LIMIT 20","%"+q+"%","%"+q+"%"));
+        model.addAttribute("proyectos",db.queryForList("SELECT * FROM proyecto WHERE codigo LIKE ? OR modalidad LIKE ? LIMIT 20","%"+q+"%","%"+q+"%"));
+        model.addAttribute("documentos",java.util.List.of()); model.addAttribute("evaluaciones",java.util.List.of()); model.addAttribute("pqrs",java.util.List.of()); model.addAttribute("prorrogas",java.util.List.of()); model.addAttribute("calendario",java.util.List.of()); model.addAttribute("historial",java.util.List.of()); model.addAttribute("usuarios",java.util.List.of()); return "dashboard";
     }
 
     @PostMapping("/proyectos/{id}/asignacion") String assign(@PathVariable long id,@RequestParam long docenteId,@RequestParam String tipo,HttpSession s) {
@@ -123,6 +177,8 @@ public class HomeController {
         if("DIRECTOR".equals(rol)||"EVALUADOR".equals(rol))return db.queryForList("SELECT p.* FROM proyecto p JOIN asignacion a ON a.proyecto_id=p.id WHERE a.docente_id=? AND a.tipo=? LIMIT 20",u.get("id"),rol);
         return db.queryForList("SELECT * FROM proyecto ORDER BY id DESC LIMIT 20");
     }
+    private boolean eligible(Map<String,Object> u){ Object v=u.get("porcentaje_creditos"); return v!=null && Double.parseDouble(v.toString())>=75; }
+    private void notifyRoles(String role,String text){ db.update("INSERT INTO notificacion(rol,mensaje) SELECT ?,?",role,text); }
     private Map<String,Object> user(HttpSession s){return (Map<String,Object>)s.getAttribute("user");}
     private boolean can(Map<String,Object> u,String...roles){if(u==null)return false;for(String r:roles)if(r.equals(u.get("rol")))return true;return false;}
     private void audit(Map<String,Object> u,String e,Long id,String a,String d){db.update("INSERT INTO historial(usuario_id,entidad,entidad_id,accion,detalle) VALUES(?,?,?,?,?)",u.get("id"),e,id,a,d);}
