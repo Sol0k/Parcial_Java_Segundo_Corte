@@ -1,2 +1,7 @@
-# Parcial Java Segundo Corte
-WAR tradicional JSP/JSTL/JDBC sobre Tomcat 10. Variables: DB_URL, DB_USER y DB_PASSWORD. Usuarios demo: admin@uts.edu.co, comite@uts.edu.co, director@uts.edu.co, evaluador@uts.edu.co y estudiante@uts.edu.co. Clave: demo123.
+# Sistema UTS
+
+Aplicación JSP/JSTL/JSPF para Tomcat 8.5 y MySQL. Sin Maven, Gradle, PHP, JavaScript propio, Servlets ni clases Java propias.
+
+Configura el recurso JNDI `jdbc/uts`, ejecuta `database/esquema.sql` y despliega el proyecto como WAR expandido.
+
+Limitación: sin clases Java propias no se puede implementar BCrypt/Argon2; el esquema usa SHA-256 de MySQL para no guardar texto plano. Las notificaciones son internas; no se simulan correos.

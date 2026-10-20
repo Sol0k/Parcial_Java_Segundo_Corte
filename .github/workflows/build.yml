@@ -1,9 +1,0 @@
-name: build
-on: [push,pull_request]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: gradle/actions/setup-gradle@v4
-      - run: gradle war --no-daemon

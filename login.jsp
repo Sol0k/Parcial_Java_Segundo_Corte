@@ -1,0 +1,6 @@
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ taglib prefix="sql" uri="http://java.sun.com/jsp/jstl/sql" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<sql:setDataSource var="db" dataSource="jdbc/uts"/>
+<c:if test="${pageContext.request.method == 'POST'}"><sql:query dataSource="${db}" var="u">SELECT id,nombre,rol FROM usuario WHERE correo=? AND password_sha256=SHA2(?,256) AND activo=1<sql:param value="${param.correo}"/><sql:param value="${param.password}"/></sql:query><c:choose><c:when test="${not empty u.rows}"><c:set var="auth" value="${u.rows[0]}" scope="session"/><c:redirect url="dashboard.jsp"/></c:when><c:otherwise><c:set var="error" value="Credenciales incorrectas."/></c:otherwise></c:choose></c:if>
+<!doctype html><html lang="es"><head><meta charset="UTF-8"><title>UTS | Trabajos de grado</title><link rel="stylesheet" href="assets/css/estilos.css"></head><body class="login"><main><small>UTS · SISTEMA ACADÉMICO</small><h1>Trabajos de grado</h1><c:if test="${not empty error}"><p class="error">${error}</p></c:if><form method="post"><label>Correo institucional<input name="correo" type="email" required></label><label>Contraseña<input name="password" type="password" required></label><button>Ingresar</button></form></main></body></html>

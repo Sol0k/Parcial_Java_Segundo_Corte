@@ -1,1 +1,0 @@
-<%@ page contentType="text/html;charset=UTF-8" %><jsp:useBean id="auth" class="co.edu.uts.web.AuthBean" scope="request"/><% auth.setRequest(request); %><%response.sendRedirect(auth.logout());%>
