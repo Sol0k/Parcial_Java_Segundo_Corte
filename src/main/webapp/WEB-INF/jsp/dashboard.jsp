@@ -2,26 +2,26 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!doctype html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Trabajos de grado UTS</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"><link rel="stylesheet" href="/app.css"></head>
 <body><div class="app-shell"><aside class="sidebar" id="sidebar">
-  <a class="brand-link" href="/app/inicio.jsp"><span class="brand-mark">TG</span><span><strong>Trabajos de Grado</strong><small>Unidades Tecnológicas de Santander</small></span></a>
+  <a class="brand-link" href="/inicio.jsp"><span class="brand-mark">TG</span><span><strong>Trabajos de Grado</strong><small>Unidades Tecnológicas de Santander</small></span></a>
   <nav class="nav-stack">
     <span class="nav-label">ESPACIO DE TRABAJO</span>
-    <a class="nav-link<c:if test="${section == 'inicio'}"> active</c:if>" href="/app/inicio.jsp"><i class="bi bi-grid-1x2-fill"></i><span>Inicio</span></a>
-    <a class="nav-link<c:if test="${section == 'ideas'}"> active</c:if>" href="/app/ideas.jsp"><i class="bi bi-lightbulb"></i><span>Banco de ideas</span></a>
-    <a class="nav-link<c:if test="${section == 'notificaciones'}"> active</c:if>" href="/app/notificaciones.jsp"><i class="bi bi-bell"></i><span>Notificaciones</span><c:if test="${notificaciones.size() > 0}"><b class="nav-badge">${notificaciones.size()}</b></c:if></a>
+    <a class="nav-link<c:if test="${section == 'inicio'}"> active</c:if>" href="/inicio.jsp"><i class="bi bi-grid-1x2-fill"></i><span>Inicio</span></a>
+    <a class="nav-link<c:if test="${section == 'ideas'}"> active</c:if>" href="/ideas.jsp"><i class="bi bi-lightbulb"></i><span>Banco de ideas</span></a>
+    <a class="nav-link<c:if test="${section == 'notificaciones'}"> active</c:if>" href="/notificaciones.jsp"><i class="bi bi-bell"></i><span>Notificaciones</span><c:if test="${notificaciones.size() > 0}"><b class="nav-badge">${notificaciones.size()}</b></c:if></a>
     <span class="nav-label">GESTIÓN ACADÉMICA</span>
-    <a class="nav-link<c:if test="${section == 'proyectos'}"> active</c:if>" href="/app/proyectos.jsp"><i class="bi bi-folder2"></i><span>Proyectos</span></a>
-    <a class="nav-link<c:if test="${section == 'operaciones'}"> active</c:if>" href="/app/practicas.jsp"><i class="bi bi-diagram-3"></i><span>Prácticas y etapas</span></a>
-    <a class="nav-link<c:if test="${section == 'entregables'}"> active</c:if>" href="/app/entregables.jsp"><i class="bi bi-file-earmark-text"></i><span>Entregables</span></a>
-    <a class="nav-link<c:if test="${section == 'evaluaciones'}"> active</c:if>" href="/app/evaluaciones.jsp"><i class="bi bi-mortarboard"></i><span>Evaluaciones</span></a>
-    <a class="nav-link<c:if test="${section == 'solicitudes'}"> active</c:if>" href="/app/solicitudes.jsp"><i class="bi bi-inbox"></i><span>Solicitudes</span></a>
-    <a class="nav-link<c:if test="${section == 'paso-a-grado'}"> active</c:if>" href="/app/paso-a-grado.jsp"><i class="bi bi-patch-check"></i><span>Paso a grado</span></a>
+    <a class="nav-link<c:if test="${section == 'proyectos'}"> active</c:if>" href="/proyectos.jsp"><i class="bi bi-folder2"></i><span>Proyectos</span></a>
+    <a class="nav-link<c:if test="${section == 'operaciones'}"> active</c:if>" href="/practicas.jsp"><i class="bi bi-diagram-3"></i><span>Prácticas y etapas</span></a>
+    <a class="nav-link<c:if test="${section == 'entregables'}"> active</c:if>" href="/entregables.jsp"><i class="bi bi-file-earmark-text"></i><span>Entregables</span></a>
+    <a class="nav-link<c:if test="${section == 'evaluaciones'}"> active</c:if>" href="/evaluaciones.jsp"><i class="bi bi-mortarboard"></i><span>Evaluaciones</span></a>
+    <a class="nav-link<c:if test="${section == 'solicitudes'}"> active</c:if>" href="/solicitudes.jsp"><i class="bi bi-inbox"></i><span>Solicitudes</span></a>
+    <a class="nav-link<c:if test="${section == 'paso-a-grado'}"> active</c:if>" href="/paso-a-grado.jsp"><i class="bi bi-patch-check"></i><span>Paso a grado</span></a>
     <span class="nav-label">CONSULTA</span>
-    <a class="nav-link<c:if test="${section == 'calendario'}"> active</c:if>" href="/app/periodos.jsp"><i class="bi bi-calendar3"></i><span>Periodos y calendario</span></a>
-    <a class="nav-link<c:if test="${section == 'pqrs'}"> active</c:if>" href="/app/pqrs.jsp"><i class="bi bi-chat-left-text"></i><span>PQRS</span></a>
-    <a class="nav-link<c:if test="${section == 'historial'}"> active</c:if>" href="/app/reportes.jsp"><i class="bi bi-bar-chart-line"></i><span>Reportes</span></a>
+    <a class="nav-link<c:if test="${section == 'calendario'}"> active</c:if>" href="/periodos.jsp"><i class="bi bi-calendar3"></i><span>Periodos y calendario</span></a>
+    <a class="nav-link<c:if test="${section == 'pqrs'}"> active</c:if>" href="/pqrs.jsp"><i class="bi bi-chat-left-text"></i><span>PQRS</span></a>
+    <a class="nav-link<c:if test="${section == 'historial'}"> active</c:if>" href="/reportes.jsp"><i class="bi bi-bar-chart-line"></i><span>Reportes</span></a>
     <c:if test="${user.rol == 'ADMIN'}">
       <span class="nav-label">ADMINISTRACIÓN</span>
-      <a class="nav-link<c:if test="${section == 'usuarios'}"> active</c:if>" href="/app/docentes.jsp"><i class="bi bi-people"></i><span>Usuarios y docentes</span></a>
+      <a class="nav-link<c:if test="${section == 'usuarios'}"> active</c:if>" href="/docentes.jsp"><i class="bi bi-people"></i><span>Usuarios y docentes</span></a>
     </c:if>
   </nav>
   <div class="sidebar-user"><div class="avatar">${user.nombre.substring(0,1)}</div><div class="sidebar-user-copy"><strong>${user.nombre}</strong><small>${user.rol}</small></div><a href="/logout" class="logout" aria-label="Cerrar sesión"><i class="bi bi-box-arrow-right"></i></a></div>
