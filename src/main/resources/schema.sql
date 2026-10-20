@@ -91,6 +91,52 @@ CREATE TABLE IF NOT EXISTS respaldo_referencia (
  id BIGINT PRIMARY KEY AUTO_INCREMENT, entidad VARCHAR(40) NOT NULL,
  referencia VARCHAR(500) NOT NULL, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+-- Migración idempotente para bases existentes.
+SET @column_exists := (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='usuario' AND column_name='especialidad');
+SET @schema_sql := IF(@column_exists=0, 'ALTER TABLE usuario ADD COLUMN especialidad VARCHAR(120)', 'SELECT 1');
+PREPARE schema_stmt FROM @schema_sql;
+EXECUTE schema_stmt;
+DEALLOCATE PREPARE schema_stmt;
+SET @column_exists := (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='usuario' AND column_name='carga_maxima');
+SET @schema_sql := IF(@column_exists=0, 'ALTER TABLE usuario ADD COLUMN carga_maxima INT DEFAULT 5', 'SELECT 1');
+PREPARE schema_stmt FROM @schema_sql;
+EXECUTE schema_stmt;
+DEALLOCATE PREPARE schema_stmt;
+SET @column_exists := (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='idea' AND column_name='fecha');
+SET @schema_sql := IF(@column_exists=0, 'ALTER TABLE idea ADD COLUMN fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP', 'SELECT 1');
+PREPARE schema_stmt FROM @schema_sql;
+EXECUTE schema_stmt;
+DEALLOCATE PREPARE schema_stmt;
+SET @column_exists := (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='proyecto' AND column_name='fecha_inicio');
+SET @schema_sql := IF(@column_exists=0, 'ALTER TABLE proyecto ADD COLUMN fecha_inicio DATE', 'SELECT 1');
+PREPARE schema_stmt FROM @schema_sql;
+EXECUTE schema_stmt;
+DEALLOCATE PREPARE schema_stmt;
+SET @column_exists := (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='etapa' AND column_name='nombre');
+SET @schema_sql := IF(@column_exists=0, 'ALTER TABLE etapa ADD COLUMN nombre VARCHAR(80) NOT NULL DEFAULT 'Etapa'', 'SELECT 1');
+PREPARE schema_stmt FROM @schema_sql;
+EXECUTE schema_stmt;
+DEALLOCATE PREPARE schema_stmt;
+SET @column_exists := (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='etapa' AND column_name='fecha_limite');
+SET @schema_sql := IF(@column_exists=0, 'ALTER TABLE etapa ADD COLUMN fecha_limite DATE', 'SELECT 1');
+PREPARE schema_stmt FROM @schema_sql;
+EXECUTE schema_stmt;
+DEALLOCATE PREPARE schema_stmt;
+SET @column_exists := (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='documento' AND column_name='firma_director');
+SET @schema_sql := IF(@column_exists=0, 'ALTER TABLE documento ADD COLUMN firma_director BOOLEAN DEFAULT FALSE', 'SELECT 1');
+PREPARE schema_stmt FROM @schema_sql;
+EXECUTE schema_stmt;
+DEALLOCATE PREPARE schema_stmt;
+SET @column_exists := (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='documento' AND column_name='firma_evaluador');
+SET @schema_sql := IF(@column_exists=0, 'ALTER TABLE documento ADD COLUMN firma_evaluador BOOLEAN DEFAULT FALSE', 'SELECT 1');
+PREPARE schema_stmt FROM @schema_sql;
+EXECUTE schema_stmt;
+DEALLOCATE PREPARE schema_stmt;
+SET @column_exists := (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='pago' AND column_name='fecha');
+SET @schema_sql := IF(@column_exists=0, 'ALTER TABLE pago ADD COLUMN fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP', 'SELECT 1');
+PREPARE schema_stmt FROM @schema_sql;
+EXECUTE schema_stmt;
+DEALLOCATE PREPARE schema_stmt;
 INSERT IGNORE INTO parametro(clave,valor) VALUES
  ('equipo_maximo_propuesta','3'),('equipo_maximo_monografia','2'),('equipo_maximo_proyecto','4'),('docente_carga_maxima','5');
 INSERT IGNORE INTO usuario(documento,nombre,correo,contrasena,rol,programa,nivel,porcentaje_creditos,carga_maxima)
