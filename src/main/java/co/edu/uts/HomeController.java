@@ -51,9 +51,9 @@ public class HomeController {
         boolean ok=stored.startsWith("$2a$")?encoder.matches(contrasena,stored):stored.equals(contrasena);
         if(!ok){m.addAttribute("error","Credenciales inválidas");return "login";}
         if(!stored.startsWith("$2a$")){String hash=encoder.encode(contrasena);db.update("UPDATE usuario SET contrasena=? WHERE id=?",hash,account.get("id"));account.put("contrasena",hash);}
-        s.setAttribute("user",account);return "redirect:/dashboard";
+        s.setAttribute("user",account);return "redirect:/app/inicio.jsp";
     }
-    @GetMapping("/logout") String logout(HttpSession s){s.invalidate();return "redirect:/login";}
+    @GetMapping({"/logout","/logout.jsp"}) String logout(HttpSession s){s.invalidate();return "redirect:/login.jsp";}
 
     @GetMapping("/dashboard")
     String dashboard(@RequestParam(defaultValue="1") int page,HttpSession s,Model m){
