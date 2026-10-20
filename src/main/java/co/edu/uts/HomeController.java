@@ -17,7 +17,31 @@ public class HomeController {
     private final JdbcTemplate db; private final PasswordEncoder encoder;
     public HomeController(JdbcTemplate db, PasswordEncoder encoder){this.db=db;this.encoder=encoder;}
 
-    @GetMapping({"/","/login"}) String login(){return "login";}
+    @GetMapping({"/","/login","/login.jsp"})
+    String login(){return "login";}
+
+    @GetMapping("/app/{page}.jsp")
+    String appPage(@PathVariable String page,@RequestParam(defaultValue="1") int pageNumber,HttpSession s,Model m){
+        String section=switch(page){
+            case "inicio" -> "inicio";
+            case "ideas" -> "ideas";
+            case "proyectos" -> "proyectos";
+            case "practicas" -> "operaciones";
+            case "entregables" -> "entregables";
+            case "evaluaciones" -> "evaluaciones";
+            case "solicitudes" -> "solicitudes";
+            case "calendario","periodos" -> "calendario";
+            case "pqrs" -> "pqrs";
+            case "notificaciones" -> "notificaciones";
+            case "usuarios","docentes","estudiantes" -> "usuarios";
+            case "paso-a-grado" -> "paso-a-grado";
+            case "reportes" -> "historial";
+            default -> null;
+        };
+        if(section==null)return "redirect:/app/inicio.jsp";
+        m.addAttribute("section",section);
+        return dashboard(pageNumber,s,m);
+    }
 
     @PostMapping("/login")
     String authenticate(@RequestParam String correo,@RequestParam String contrasena,HttpSession s,Model m){
@@ -35,7 +59,7 @@ public class HomeController {
     String dashboard(@RequestParam(defaultValue="1") int page,HttpSession s,Model m){
         Map<String,Object> u=user(s);if(u==null)return "redirect:/login";
         int p=Math.max(1,page),offset=(p-1)*20; String role=String.valueOf(u.get("rol"));
-        m.addAttribute("user",u);m.addAttribute("page",p);
+        m.addAttribute("user",u);m.addAttribute("page",p);if(!m.containsAttribute("section"))m.addAttribute("section","inicio");
         m.addAttribute("ideas",db.queryForList("SELECT * FROM idea ORDER BY fecha DESC LIMIT 20 OFFSET "+offset));
         m.addAttribute("proyectos",projects(role,u,offset));
         m.addAttribute("documentos",db.queryForList("SELECT * FROM documento ORDER BY fecha DESC LIMIT 20"));
