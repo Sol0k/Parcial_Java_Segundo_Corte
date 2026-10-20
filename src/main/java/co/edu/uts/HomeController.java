@@ -44,6 +44,7 @@ public class HomeController {
         model.addAttribute("calendario",db.queryForList("SELECT * FROM calendario ORDER BY inicio LIMIT 20"));
         model.addAttribute("historial",db.queryForList("SELECT * FROM historial ORDER BY fecha DESC LIMIT 20"));
         model.addAttribute("usuarios",db.queryForList("SELECT id,nombre,correo,rol,activo FROM usuario ORDER BY nombre LIMIT 20"));
+        model.addAttribute("notificaciones",db.queryForList("SELECT * FROM notificacion WHERE (rol=? OR usuario_id=?) AND leida=FALSE ORDER BY fecha DESC LIMIT 20",(String)u.get("rol"),u.get("id")));
         return "dashboard";
     }
 
@@ -106,6 +107,32 @@ public class HomeController {
     String extensionDecision(@PathVariable long id,@RequestParam String estado,HttpSession s) {
         Map<String,Object> u=user(s); if(!can(u,"COMITE","ADMIN"))return "redirect:/dashboard";
         db.update("UPDATE prorroga SET estado=? WHERE id=?",estado,id); audit(u,"PRORROGA",id,estado,""); return "redirect:/dashboard";
+    }
+
+    @PostMapping("/paso-a-grado/{id}")
+    String degree(@PathVariable long id,HttpSession s) {
+        Map<String,Object> u=user(s); if(!can(u,"COMITE","ADMIN"))return "redirect:/dashboard";
+        Integer stages=db.queryForObject("SELECT COUNT(*) FROM etapa WHERE proyecto_id=? AND estado='FINALIZADA'",Integer.class,id);
+        Integer docs=db.queryForObject("SELECT COUNT(*) FROM documento WHERE proyecto_id=? AND estado='APROBADO'",Integer.class,id);
+        Integer payments=db.queryForObject("SELECT COUNT(*) FROM pago WHERE proyecto_id=? AND estado='APROBADO'",Integer.class,id);
+        if(stages==null||stages<6||docs==null||docs<1||payments==null||payments<1)return "redirect:/dashboard";
+        db.update("UPDATE proyecto SET estado='LISTO_PARA_GRADO' WHERE id=?",id);
+        audit(u,"PROYECTO",id,"PASO_A_GRADO","Requisitos completos"); return "redirect:/dashboard";
+    }
+
+    @PostMapping("/notificaciones/leidas")
+    String readNotifications(HttpSession s) {
+        Map<String,Object> u=user(s); if(u!=null)db.update("UPDATE notificacion SET leida=TRUE WHERE rol=? OR usuario_id=?",u.get("rol"),u.get("id"));
+        return "redirect:/dashboard";
+    }
+
+    @GetMapping("/reportes/proyectos")
+    @ResponseBody String projectReport(HttpSession s) {
+        Map<String,Object> u=user(s); if(!can(u,"COMITE","ADMIN"))return "No autorizado";
+        var rows=db.queryForList("SELECT codigo,modalidad,estado,fecha_aprobacion FROM proyecto ORDER BY codigo");
+        StringBuilder csv=new StringBuilder("codigo,modalidad,estado,fecha_aprobacion\\n");
+        rows.forEach(r->csv.append(r.get("codigo")).append(',').append(r.get("modalidad")).append(',').append(r.get("estado")).append(',').append(r.get("fecha_aprobacion")).append('\\n'));
+        return csv.toString();
     }
 
     @GetMapping("/health") @ResponseBody String health(){ return "ok"; }
