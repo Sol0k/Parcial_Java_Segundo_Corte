@@ -1,1 +1,93 @@
-package co.edu.uts.web;import co.edu.uts.data.Database;import jakarta.servlet.http.*;import java.util.*;import org.mindrot.jbcrypt.BCrypt;public class ActionBean{private HttpServletRequest r;private Map<String,Object>u;private String redirect;public void setRequest(HttpServletRequest x){r=x;u=(Map<String,Object>)x.getSession().getAttribute("user");Database.init();}public String getRedirect(){return redirect;}private String p(String n){return r.getParameter(n);}private void need(String...a){if(u==null||Arrays.stream(a).noneMatch(x->x.equals(u.get("rol"))))throw new SecurityException("Sin permisos.");}public String process(){if(!"POST".equals(r.getMethod())||!Objects.equals(r.getSession().getAttribute("csrf"),p("csrf")))return "";try{String a=p("action");if("createIdea".equals(a)){need("ESTUDIANTE","ADMIN","COMITE");Database.update("INSERT INTO idea(titulo,descripcion,nivel,estado,creador_id)VALUES(?,?,?,'PENDIENTE',?)",p("titulo"),p("descripcion"),p("nivel"),u.get("id"));}else if("selectIdea".equals(a)){need("ESTUDIANTE");Database.update("INSERT IGNORE INTO idea_estudiante(idea_id,estudiante_id)VALUES(?,?)",p("ideaId"),u.get("id"));}else if("createProject".equals(a)){need("ADMIN","COMITE");Database.update("INSERT INTO proyecto(codigo,idea_id,modalidad,estado)VALUES(?,?,?,'ACTIVO')",p("codigo"),p("ideaId"),p("modalidad"));}else if("document".equals(a)){need("ESTUDIANTE","ADMIN","COMITE","DIRECTOR");Database.update("INSERT INTO documento(proyecto_id,tipo,url)VALUES(?,?,?)",p("proyectoId"),p("tipo"),p("url"));}else if("pqrs".equals(a)){Database.update("INSERT INTO pqrs(usuario_id,asunto,descripcion)VALUES(?,?,?)",u.get("id"),p("asunto"),p("descripcion"));}else if("createUser".equals(a)){need("ADMIN");Database.update("INSERT INTO usuario(documento,nombre,correo,contrasena,rol)VALUES(?,?,?,?,?)",p("documento"),p("nombre"),p("correo"),BCrypt.hashpw(p("contrasena"),BCrypt.gensalt(10)),p("rol"));}else if("readNotifications".equals(a))Database.update("UPDATE notificacion SET leida=TRUE");String x=p("returnPage");if(x==null||x.startsWith("create")||x.startsWith("select")||x.equals("document.jsp")||x.equals("evaluation.jsp")||x.equals("extension.jsp")||x.equals("readNotifications.jsp")||x.equals("pqrs.jsp")||x.equals("stage.jsp")){String actionName=p("action");x=actionName.equals("createIdea")||actionName.equals("selectIdea")?"ideas.jsp":actionName.equals("createProject")?"proyectos.jsp":actionName.equals("document")?"entregables.jsp":actionName.equals("evaluation")?"evaluaciones.jsp":actionName.equals("extension")?"solicitudes.jsp":actionName.equals("pqrs")?"pqrs.jsp":actionName.equals("readNotifications")?"notificaciones.jsp":"inicio.jsp";}redirect=r.getContextPath()+"/"+x;}catch(Exception e){}return "";} }
+package co.edu.uts.web;
+
+import co.edu.uts.data.Database;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.mindrot.jbcrypt.BCrypt;
+
+public class ActionBean {
+    private static final Logger LOG = Logger.getLogger(ActionBean.class.getName());
+    private HttpServletRequest request;
+    private Map<String, Object> user;
+    private String redirect;
+
+    public void setRequest(HttpServletRequest request) {
+        this.request = request;
+        if (request != null) {
+            user = (Map<String, Object>) request.getSession().getAttribute("user");
+            Database.init();
+        }
+    }
+
+    public String getRedirect() { return redirect; }
+
+    private String parameter(String name) { return request.getParameter(name); }
+
+    private void requireRole(String... roles) {
+        if (user == null || Arrays.stream(roles).noneMatch(role -> role.equals(user.get("rol")))) {
+            throw new SecurityException("No tienes permisos para esta acción.");
+        }
+    }
+
+    public String process() {
+        if (request == null || !"POST".equalsIgnoreCase(request.getMethod())) return "";
+        if (!Objects.equals(request.getSession().getAttribute("csrf"), parameter("csrf"))) return "";
+
+        try {
+            String action = parameter("action");
+            if ("createIdea".equals(action)) {
+                requireRole("ESTUDIANTE", "ADMIN", "COMITE");
+                Database.update("INSERT INTO idea(titulo,descripcion,nivel,estado,creador_id) VALUES(?,?,?,'PENDIENTE',?)",
+                    parameter("titulo"), parameter("descripcion"), parameter("nivel"), user.get("id"));
+            } else if ("selectIdea".equals(action)) {
+                requireRole("ESTUDIANTE");
+                Database.update("INSERT IGNORE INTO idea_estudiante(idea_id,estudiante_id) VALUES(?,?)",
+                    parameter("ideaId"), user.get("id"));
+            } else if ("createProject".equals(action)) {
+                requireRole("ADMIN", "COMITE");
+                Database.update("INSERT INTO proyecto(codigo,idea_id,modalidad,estado) VALUES(?,?,?,'ACTIVO')",
+                    parameter("codigo"), parameter("ideaId"), parameter("modalidad"));
+            } else if ("document".equals(action)) {
+                requireRole("ESTUDIANTE", "ADMIN", "COMITE", "DIRECTOR");
+                Database.update("INSERT INTO documento(proyecto_id,tipo,url) VALUES(?,?,?)",
+                    parameter("proyectoId"), parameter("tipo"), parameter("url"));
+            } else if ("pqrs".equals(action)) {
+                Database.update("INSERT INTO pqrs(usuario_id,asunto,descripcion) VALUES(?,?,?)",
+                    user.get("id"), parameter("asunto"), parameter("descripcion"));
+            } else if ("createUser".equals(action)) {
+                requireRole("ADMIN");
+                Database.update("INSERT INTO usuario(documento,nombre,correo,contrasena,rol) VALUES(?,?,?,?,?)",
+                    parameter("documento"), parameter("nombre"), parameter("correo"),
+                    BCrypt.hashpw(parameter("contrasena"), BCrypt.gensalt(10)), parameter("rol"));
+            } else if ("readNotifications".equals(action)) {
+                Database.update("UPDATE notificacion SET leida=TRUE");
+            }
+
+            String target = parameter("returnPage");
+            String actionName = parameter("action");
+            if (target == null || target.startsWith("create") || target.startsWith("select")
+                    || target.equals("document.jsp") || target.equals("evaluation.jsp")
+                    || target.equals("extension.jsp") || target.equals("readNotifications.jsp")
+                    || target.equals("pqrs.jsp") || target.equals("stage.jsp")) {
+                target = switch (actionName) {
+                    case "createIdea", "selectIdea" -> "ideas.jsp";
+                    case "createProject" -> "proyectos.jsp";
+                    case "document" -> "entregables.jsp";
+                    case "evaluation" -> "evaluaciones.jsp";
+                    case "extension" -> "solicitudes.jsp";
+                    case "pqrs" -> "pqrs.jsp";
+                    case "readNotifications" -> "notificaciones.jsp";
+                    default -> "inicio.jsp";
+                };
+            }
+            redirect = request.getContextPath() + "/" + target;
+        } catch (Exception exception) {
+            LOG.log(Level.SEVERE, "Error procesando acción de aplicación", exception);
+        }
+        return "";
+    }
+}
