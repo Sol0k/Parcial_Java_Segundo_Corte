@@ -130,8 +130,8 @@ public class HomeController {
     @ResponseBody String projectReport(HttpSession s) {
         Map<String,Object> u=user(s); if(!can(u,"COMITE","ADMIN"))return "No autorizado";
         var rows=db.queryForList("SELECT codigo,modalidad,estado,fecha_aprobacion FROM proyecto ORDER BY codigo");
-        StringBuilder csv=new StringBuilder("codigo,modalidad,estado,fecha_aprobacion\\n");
-        rows.forEach(r->csv.append(r.get("codigo")).append(',').append(r.get("modalidad")).append(',').append(r.get("estado")).append(',').append(r.get("fecha_aprobacion")).append('\\n'));
+        StringBuilder csv=new StringBuilder("codigo,modalidad,estado,fecha_aprobacion\n");
+        rows.forEach(r->csv.append(r.get("codigo")).append(',').append(r.get("modalidad")).append(',').append(r.get("estado")).append(',').append(r.get("fecha_aprobacion")).append('\n'));
         return csv.toString();
     }
 
