@@ -228,7 +228,7 @@ public class HomeController {
     String report(HttpSession s){
         if(!can(user(s),"COMITE","ADMIN"))return "No autorizado";
         StringBuilder out=new StringBuilder("codigo,modalidad,estado,fecha_aprobacion\\n");
-        db.queryForList("SELECT codigo,modalidad,estado,fecha_aprobacion FROM proyecto ORDER BY codigo").forEach(r->out.append(r.get("codigo")).append(',').append(r.get("modalidad")).append(',').append(r.get("estado")).append(',').append(r.get("fecha_aprobacion")).append('\\n'));
+        db.queryForList("SELECT codigo,modalidad,estado,fecha_aprobacion FROM proyecto ORDER BY codigo").forEach(r->out.append(r.get("codigo")).append(',').append(r.get("modalidad")).append(',').append(r.get("estado")).append(',').append(r.get("fecha_aprobacion")).append('\n'));
         return out.toString();
     }
 
