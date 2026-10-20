@@ -109,8 +109,8 @@ public class HomeController {
         db.update("UPDATE prorroga SET estado=? WHERE id=?",estado,id); audit(u,"PRORROGA",id,estado,""); return "redirect:/dashboard";
     }
 
-    @PostMapping("/paso-a-grado/{id}")
-    String degree(@PathVariable long id,HttpSession s) {
+    @PostMapping("/paso-a-grado")
+    String degree(@RequestParam long id,HttpSession s) {
         Map<String,Object> u=user(s); if(!can(u,"COMITE","ADMIN"))return "redirect:/dashboard";
         Integer stages=db.queryForObject("SELECT COUNT(*) FROM etapa WHERE proyecto_id=? AND estado='FINALIZADA'",Integer.class,id);
         Integer docs=db.queryForObject("SELECT COUNT(*) FROM documento WHERE proyecto_id=? AND estado='APROBADO'",Integer.class,id);
