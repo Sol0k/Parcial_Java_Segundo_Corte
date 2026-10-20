@@ -3,6 +3,7 @@ package co.edu.uts;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
@@ -12,15 +13,20 @@ import java.util.regex.Pattern;
 @Controller
 public class HomeController {
     private final JdbcTemplate db;
-    public HomeController(JdbcTemplate db) { this.db = db; }
+    private final PasswordEncoder passwords;
+    public HomeController(JdbcTemplate db, PasswordEncoder passwords) { this.db = db; this.passwords = passwords; }
 
     @GetMapping({"/", "/login"}) String login() { return "login"; }
 
     @PostMapping("/login")
     String authenticate(@RequestParam String correo, @RequestParam String contrasena, HttpSession session, Model model) {
-        var users = db.queryForList("SELECT * FROM usuario WHERE correo=? AND contrasena=? AND activo=1", correo, contrasena);
+        var users = db.queryForList("SELECT * FROM usuario WHERE correo=? AND activo=1", correo);
         if (users.isEmpty()) { model.addAttribute("error", "Credenciales inválidas"); return "login"; }
-        session.setAttribute("user", users.getFirst()); return "redirect:/dashboard";
+        var account=users.getFirst(); String stored=String.valueOf(account.get("contrasena"));
+        boolean valid=stored.startsWith("$2a$") ? passwords.matches(contrasena,stored) : stored.equals(contrasena);
+        if(!valid){ model.addAttribute("error","Credenciales inválidas"); return "login"; }
+        if(!stored.startsWith("$2a$")){ String encoded=passwords.encode(contrasena); db.update("UPDATE usuario SET contrasena=? WHERE id=?",encoded,account.get("id")); account.put("contrasena",encoded); }
+        session.setAttribute("user", account); return "redirect:/dashboard";
     }
 
     @GetMapping("/logout") String logout(HttpSession session) { session.invalidate(); return "redirect:/login"; }
@@ -168,7 +174,8 @@ public class HomeController {
 
     @PostMapping("/usuarios") String createUser(@RequestParam String documento,@RequestParam String nombre,@RequestParam String correo,@RequestParam String rol,@RequestParam(defaultValue="demo123") String contrasena,HttpSession s) {
         Map<String,Object> u=user(s); if(!can(u,"ADMIN"))return "redirect:/dashboard";
-        db.update("INSERT INTO usuario(documento,nombre,correo,contrasena,rol) VALUES(?,?,?,?,?)",documento,nombre,correo,contrasena,rol);
+        if(!correo.endsWith("@uts.edu.co"))return "redirect:/dashboard";
+        db.update("INSERT INTO usuario(documento,nombre,correo,contrasena,rol) VALUES(?,?,?,?,?)",documento,nombre,correo,passwords.encode(contrasena),rol);
         audit(u,"USUARIO",null,"CREAR",correo); return "redirect:/dashboard";
     }
 
