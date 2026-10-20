@@ -1,21 +1,6 @@
-plugins {
-    id 'java'
-    id 'war'
-    id 'org.springframework.boot' version '3.5.6'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
-group = 'co.edu.uts'
-version = '0.0.1-SNAPSHOT'
-java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
-dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
-    implementation 'org.springframework.security:spring-security-crypto'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper'
-    implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:3.0.2'
-    implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.1'
-    runtimeOnly 'com.mysql:mysql-connector-j'
-    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-}
-tasks.named('bootWar') { archiveFileName = 'app.war' }
+plugins { id 'java'; id 'war' }
+group='co.edu.uts'; version='1.0.0'
+java { toolchain { languageVersion=JavaLanguageVersion.of(21) } }
+repositories { mavenCentral() }
+dependencies { compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0'; compileOnly 'jakarta.servlet.jsp:jakarta.servlet.jsp-api:3.1.1'; implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:3.0.2'; implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.1'; implementation 'org.mindrot:jbcrypt:0.4'; runtimeOnly 'com.mysql:mysql-connector-j:9.0.0' }
+war { archiveFileName='app.war' }
