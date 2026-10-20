@@ -113,7 +113,7 @@ PREPARE schema_stmt FROM @schema_sql;
 EXECUTE schema_stmt;
 DEALLOCATE PREPARE schema_stmt;
 SET @column_exists := (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='etapa' AND column_name='nombre');
-SET @schema_sql := IF(@column_exists=0, 'ALTER TABLE etapa ADD COLUMN nombre VARCHAR(80) NOT NULL DEFAULT 'Etapa'', 'SELECT 1');
+SET @schema_sql := IF(@column_exists=0, 'ALTER TABLE etapa ADD COLUMN nombre VARCHAR(80)', 'SELECT 1');
 PREPARE schema_stmt FROM @schema_sql;
 EXECUTE schema_stmt;
 DEALLOCATE PREPARE schema_stmt;
