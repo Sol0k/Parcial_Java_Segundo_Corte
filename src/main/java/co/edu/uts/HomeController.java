@@ -20,7 +20,7 @@ public class HomeController {
     @GetMapping({"/","/login","/login.jsp"})
     String login(){return "login";}
 
-    @GetMapping({"/app/inicio.jsp","/app/ideas.jsp","/app/proyectos.jsp","/app/practicas.jsp","/app/entregables.jsp","/app/evaluaciones.jsp","/app/solicitudes.jsp","/app/periodos.jsp","/app/pqrs.jsp","/app/notificaciones.jsp","/app/docentes.jsp","/app/estudiantes.jsp","/app/paso-a-grado.jsp","/app/reportes.jsp"})
+    @GetMapping({"/inicio.jsp","/ideas.jsp","/proyectos.jsp","/practicas.jsp","/entregables.jsp","/evaluaciones.jsp","/solicitudes.jsp","/periodos.jsp","/pqrs.jsp","/notificaciones.jsp","/docentes.jsp","/estudiantes.jsp","/paso-a-grado.jsp","/reportes.jsp","/app/inicio.jsp","/app/ideas.jsp","/app/proyectos.jsp","/app/practicas.jsp","/app/entregables.jsp","/app/evaluaciones.jsp","/app/solicitudes.jsp","/app/periodos.jsp","/app/pqrs.jsp","/app/notificaciones.jsp","/app/docentes.jsp","/app/estudiantes.jsp","/app/paso-a-grado.jsp","/app/reportes.jsp"})
     String appPage(@RequestParam(defaultValue="1") int pageNumber,HttpSession s,Model m, jakarta.servlet.http.HttpServletRequest request){
         String uri=request.getRequestURI();
         String page=uri.substring(uri.lastIndexOf('/')+1,uri.length()-4);
@@ -40,7 +40,7 @@ public class HomeController {
             case "reportes" -> "historial";
             default -> null;
         };
-        if(section==null)return "redirect:/app/inicio.jsp";
+        if(section==null)return "redirect:/inicio.jsp";
         m.addAttribute("section",section);
         return dashboard(pageNumber,s,m);
     }
@@ -53,7 +53,7 @@ public class HomeController {
         boolean ok=stored.startsWith("$2a$")?encoder.matches(contrasena,stored):stored.equals(contrasena);
         if(!ok){m.addAttribute("error","Credenciales inválidas");return "login";}
         if(!stored.startsWith("$2a$")){String hash=encoder.encode(contrasena);db.update("UPDATE usuario SET contrasena=? WHERE id=?",hash,account.get("id"));account.put("contrasena",hash);}
-        s.setAttribute("user",account);return "redirect:/app/inicio.jsp";
+        s.setAttribute("user",account);return "redirect:/inicio.jsp";
     }
     @GetMapping({"/logout","/logout.jsp"}) String logout(HttpSession s){s.invalidate();return "redirect:/login.jsp";}
 
