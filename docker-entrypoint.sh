@@ -12,7 +12,7 @@ cat > /usr/local/tomcat/conf/Catalina/localhost/ROOT.xml <<EOF
     maxTotal="20" maxIdle="5" maxWaitMillis="10000"
     username="${MYSQLUSER}" password="${MYSQLPASSWORD}"
     driverClassName="com.mysql.cj.jdbc.Driver"
-    url="jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}?useSSL=false&amp;serverTimezone=UTC&amp;allowPublicKeyRetrieval=true"/>
+    url="jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}?useSSL=false&amp;serverTimezone=UTC&amp;allowPublicKeyRetrieval=true&amp;useUnicode=true&amp;characterEncoding=UTF-8"/>
 </Context>
 EOF
 exec catalina.sh run
