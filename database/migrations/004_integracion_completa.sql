@@ -195,6 +195,8 @@ CALL agregar_columna_si_falta('proyecto','creado_en','TIMESTAMP NULL DEFAULT CUR
 CALL agregar_columna_si_falta('documento','creado_en','TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP');
 CALL agregar_columna_si_falta('pago','creado_en','TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP');
 CALL agregar_columna_si_falta('historial','creado_en','TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP');
+CALL agregar_columna_si_falta('historial','estado_anterior','VARCHAR(40) NULL');
+CALL agregar_columna_si_falta('historial','estado_nuevo','VARCHAR(40) NULL');
 
 DROP PROCEDURE agregar_columna_si_falta;
 
